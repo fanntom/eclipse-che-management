@@ -1,5 +1,6 @@
 import os
 import netifaces as ni
+import socket
 
 os.system('clear')
 
@@ -20,21 +21,29 @@ if modeopt == '1':
 
     elif option1 == '2':
         os.system('clear')
-        print('This feature is a work in progress')
+        def get_ip_address():
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+        print('Detected IP address is: ' + get_ip_address())
+        print('\nStarting Eclipse Che on Detected IP...\n')
+        os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + get_ip_address() + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che start')
 
     elif option1 == '3':
         os.system('clear')
         address = raw_input('\nEnter the IP Address you want to start Eclipse Che: ')
         os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + address + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che start')
 
-    elif option1 == '4':
+    elif option1 == '4' or option1 == 'exit':
         os.system('clear')
         print('Quitting...')
+    else:
+        print('\nYou entered an invalid option. Exiting...')
 
 
 elif modeopt == "2":
     os.system('clear')
-    address = raw_input('\nEnter the IP Address you want to stop Eclipse Che: ')
+    address = raw_input('Enter the IP Address you want to stop Eclipse Che: ')
     os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + address + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che stop --skip:graceful')
 
 elif modeopt == "3":
