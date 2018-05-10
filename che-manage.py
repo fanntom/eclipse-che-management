@@ -18,6 +18,10 @@ if modeopt == '1':
         ip = ni.ifaddresses(iface)[ni.AF_INET][0]['addr']
         os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + ip + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che start')
 
+    elif option1 == '2':
+        os.system('clear')
+        print('This feature is a work in progress')
+
     elif option1 == '3':
         os.system('clear')
         address = raw_input('\nEnter the IP Address you want to start Eclipse Che: ')
@@ -37,5 +41,5 @@ elif modeopt == "3":
     os.system('clear')
     print("\nQuitting...")
 
-\else:
+else:
     print("\nYou did not enter a valid option. Exiting program...")
