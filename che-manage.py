@@ -1,7 +1,7 @@
 import os
 import netifaces as ni
 import socket
-
+#This is a test
 os.system('clear')
 
 print('********************************\n*Eclipse Che Management Console*\n********************************\n')
