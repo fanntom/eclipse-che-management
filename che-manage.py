@@ -11,7 +11,7 @@ if modeopt == "1":
 
 elif modeopt == "2":
     os.system('clear')
-    address = raw_input('\nEnter the IP Address you want to start Eclipse Che: ')
+    address = raw_input('\nEnter the IP Address you want to stop Eclipse Che: ')
     os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + address + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che stop --skip:graceful')
 
 elif modeopt == "3":
