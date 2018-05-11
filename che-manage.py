@@ -1,6 +1,10 @@
 import os
 import netifaces as ni
 import socket
+from collections import namedtuple
+import re
+import subprocess
+
 os.system('clear')
 
 print('********************************\n*Eclipse Che Management Console*\n********************************\n')
@@ -16,7 +20,30 @@ if modeopt == '1':
         option1 = raw_input('Select how you want to set the IP address of the Eclipse Che service:\n\n1. Auto-Detect IP address of given interface\n2. Auto-Detect the Interface that is used to connect to the Internet and obtain the IP address\n3. Manually enter the IP address\n4. Exit Program\n\nYour Option: ')
         if option1 == '1':
             os.system('clear')
-            iface = raw_input('Enter Interface Name: ')
+            print('Detected Interfaces:\n')
+            def get_interfaces(external=False, ip=False):
+                name_pattern = "^(\w+)\s"
+                mac_pattern = ".*?HWaddr[ ]([0-9A-Fa-f:]{17})" if external else ""
+                ip_pattern = ".*?\n\s+inet[ ]addr:((?:\d+\.){3}\d+)" if ip else ""
+                pattern = re.compile("".join((name_pattern, mac_pattern, ip_pattern)),
+                                     flags=re.MULTILINE)
+
+                ifconfig = subprocess.check_output("ifconfig").decode()
+                interfaces = pattern.findall(ifconfig)
+                if external or ip:
+                    Interface = namedtuple("Interface", "name {mac} {ip}".format(
+                        mac="mac" if external else "",
+                        ip="ip" if ip else ""))
+                    return [Interface(*interface) for interface in interfaces]
+                else:
+                    return interfaces
+
+            if __name__ == "__main__":
+                interfaces = get_interfaces(external=False, ip=True)
+                for interface in interfaces:
+                    print("{name}: {ip}".format(name=interface.name, ip=interface.ip))
+
+            iface = raw_input('\nEnter Interface Name: ')
             ni.ifaddresses(iface)
             ip = ni.ifaddresses(iface)[ni.AF_INET][0]['addr']
             os.system('clear')
@@ -41,8 +68,22 @@ if modeopt == '1':
         elif option1 == '3':
             os.system('clear')
             address = raw_input('\nEnter the IP Address you want to start Eclipse Che: ')
-            os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + address + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che start')
-
+            def validate_address(address2):
+                try:
+                    socket.inet_pton(socket.AF_INET, address2)
+                except AttributeError:
+                    try:
+                        socket.inet_aton(address2)
+                    except socket.error:
+                        return False
+                    return address2.count('.') == 3
+                except socket.error:
+                    return False
+                return True
+            if validate_address(address) == True:
+                os.system('sudo docker run -it -e CHE_MULTIUSER=true -e CHE_HOST=' + address + ' -v /var/run/docker.sock:/var/run/docker.sock -v ~/.che-multiuser:/data eclipse/che start')
+            elif validate_address(address) == False:
+                print('\nYou did not enter a proper ipv4 address. Exiting...')
         elif option1 == '4' or option1 == 'exit':
             os.system('clear')
             print('Quitting...')
@@ -77,7 +118,7 @@ elif modeopt == "2":
 
 elif modeopt == "3":
     os.system('clear')
-    print("\nQuitting...")
+    print("Quitting...")
 
 else:
     print("\nYou did not enter a valid option. Exiting program...")
