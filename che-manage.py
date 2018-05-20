@@ -4,6 +4,7 @@ import socket
 from collections import namedtuple
 import re
 import subprocess
+from requests import get
 
 os.system('clear')
 
